@@ -171,8 +171,7 @@ int FIFO()
     return page_faults;
 }
 
-int main(int argc, char *argv[]){
-
+int main(){
 
     for(int i = 0; i < RUN_COUNT; ++i){
 
