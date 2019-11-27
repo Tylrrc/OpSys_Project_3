@@ -29,6 +29,7 @@ int NUMBER_OF_FRAMES;
 *   @return - Number of page faults (misses)
 */
 int LRU(){
+    
     unordered_set<int> current_pages;
     unordered_map<int, int> indexes;
 
@@ -82,9 +83,10 @@ int LRU(){
 *   @return - true if a match is found, otherwise false
 */
 bool search(int page, vector<int>& frames){
+
     for (int i = 0; i < frames.size(); ++i)
-        if (frames[i] == page)
-            return true;
+        if (frames[i] == page) return true;
+
     return false;
 }
 
@@ -101,25 +103,21 @@ bool search(int page, vector<int>& frames){
 *       otherwise return the page to be replaced
 */
 int predict(int index, vector<int>& frames){
-    int res = -1; 
+
+    int temp = -1; 
     int farthest = index;
     for (int i = 0; i < frames.size(); ++i) {
         int j;
         for (j = index; j < REFERENCE_STRING_SIZE; ++j) {
             if (frames[i] == PAGES[j]) {
-                if (j > farthest) {
-                    farthest = j;
-                    res = i;
-                }
+                if (j > farthest) { farthest = j; temp = i; }
                 break;
             }
         }
-
-        if (j == REFERENCE_STRING_SIZE)
-            return i;
+        if (j == REFERENCE_STRING_SIZE) return i;
     }
 
-    return (res == -1) ? 0 : res;
+    return (temp == -1) ? 0 : temp;
 }
 
 /*
@@ -140,17 +138,13 @@ int OPTIMAL(){
     int hit = 0;
     for (int i = 0; i < REFERENCE_STRING_SIZE; ++i) {
 
-        if (search(PAGES[i], frames)) {
-            hit++;
-            continue;
-        }
+        if (search(PAGES[i], frames)) { hit++; continue; }
 
-        if (frames.size() < NUMBER_OF_FRAMES)
-            frames.push_back(PAGES[i]);
-        else {
-            frames[predict(i + 1, frames)] = PAGES[i];
-        }
+        if (frames.size() < NUMBER_OF_FRAMES) frames.push_back(PAGES[i]);
+
+        else frames[predict(i + 1, frames)] = PAGES[i];
     }
+
     return REFERENCE_STRING_SIZE - hit;
 }
 
@@ -165,8 +159,8 @@ int OPTIMAL(){
 *   @param - None
 *   @return - Number of page faults (misses)
 */
-int FIFO()
-{
+int FIFO(){
+
     unordered_set<int>current_pages;
     queue<int> indexes;
 
