@@ -13,89 +13,100 @@ using namespace std;
 #define FRAME_SIZE_RANGE 30
 #define RUN_COUNT 10
 
-int pages[REFERENCE_STRING_SIZE];
+int PAGES[REFERENCE_STRING_SIZE];
 
 int NUMBER_OF_FRAMES;
 
+/*
+*   Function: LRU
+*   ------------------------------------------------------
+*   Description: Calculates the number of page faults that 
+*       occur during the execution of the Least Recently 
+*       Used (LRU) page replacement algorithm.
+*   Pre: PAGES array must be populated with 100 random 
+*       values ranging between 0 and 49
+*   @param - None
+*   @return - Number of page faults (misses)
+*/
 int LRU(){
-    unordered_set<int> s;
-
+    unordered_set<int> current_pages;
     unordered_map<int, int> indexes;
 
     int page_faults = 0;
-    for (int i = 0; i < REFERENCE_STRING_SIZE; i++)
+    for (int i = 0; i < REFERENCE_STRING_SIZE; ++i)
     {
-        // Check if the set can hold more pages
-        if (s.size() < NUMBER_OF_FRAMES)
+        if (current_pages.size() < NUMBER_OF_FRAMES)
         {
-            // Insert it into set if not present
-            // already which represents page fault
-            if (s.find(pages[i])==s.end())
+            if (current_pages.find(PAGES[i]) == current_pages.end())
             {
-                s.insert(pages[i]);
-
-                // increment page fault
+                current_pages.insert(PAGES[i]);
                 page_faults++;
             }
-
-            // Store the recently used index of
-            // each page
-            indexes[pages[i]] = i;
+            indexes[PAGES[i]] = i;
         }
-
-        // If the set is full then need to perform lru
-        // i.e. remove the least recently used page
-        // and insert the current page
         else
         {
-            // Check if current page is not already
-            // present in the set
-            if (s.find(pages[i]) == s.end())
+            if (current_pages.find(PAGES[i]) == current_pages.end())
             {
-                // Find the least recently used pages
-                // that is present in the set
-                int lru = INT_MAX, val;
-                for (auto it=s.begin(); it!=s.end(); it++)
+                int LEAST_RECENTLY_USED = 1000000, val;
+                for (auto it=current_pages.begin(); it!=current_pages.end(); ++it)
                 {
-                    if (indexes[*it] < lru)
+                    if (indexes[*it] < LEAST_RECENTLY_USED)
                     {
-                        lru = indexes[*it];
+                        LEAST_RECENTLY_USED = indexes[*it];
                         val = *it;
                     }
                 }
 
-                // Remove the indexes page
-                s.erase(val);
+                current_pages.erase(val);
+                current_pages.insert(PAGES[i]);
 
-                // insert the current page
-                s.insert(pages[i]);
-
-                // Increment page faults
                 page_faults++;
             }
-
-            // Update the current page index
-            indexes[pages[i]] = i;
+            indexes[PAGES[i]] = i;
         }
     }
 
     return page_faults;
 }
 
-bool search(int key, vector<int>& fr){
-    for (int i = 0; i < fr.size(); i++)
-        if (fr[i] == key)
+/*
+*   Function: search
+*   ------------------------------------------------------
+*   Description: Performs a linear search of the frames 
+*       vector to find a match. If a match is found, then 
+*       the page exists in the frame.
+*   @param -
+*       page - page to be found in the frame
+*       frames - set of frames to be searched
+*   @return - true if a match is found, otherwise false
+*/
+bool search(int page, vector<int>& frames){
+    for (int i = 0; i < frames.size(); ++i)
+        if (frames[i] == page)
             return true;
     return false;
 }
 
-int predict(int pages[], vector<int>& frames, int index){
+/*
+*   Function: predict
+*   ------------------------------------------------------
+*   Description: Finds which frame will not be used
+*       in the near future
+*   @param -
+*       frames - set of frames to be searched
+*       index - index of pages that will be used in the near 
+*           future
+*   @return - if no frames are found in the future, return 0, 
+*       otherwise return the page to be replaced
+*/
+int predict(int index, vector<int>& frames){
     int res = -1; 
     int farthest = index;
-    for (int i = 0; i < frames.size(); i++) {
+    for (int i = 0; i < frames.size(); ++i) {
         int j;
-        for (j = index; j < REFERENCE_STRING_SIZE; j++) {
-            if (frames[i] == pages[j]) {
+        for (j = index; j < REFERENCE_STRING_SIZE; ++j) {
+            if (frames[i] == PAGES[j]) {
                 if (j > farthest) {
                     farthest = j;
                     res = i;
@@ -111,63 +122,79 @@ int predict(int pages[], vector<int>& frames, int index){
     return (res == -1) ? 0 : res;
 }
 
+/*
+*   Function: OPTIMAL
+*   ------------------------------------------------------
+*   Description: Calculates the number of page faults that 
+*       occur during the execution of the Optimal 
+*       page replacement algorithm.
+*   Pre: PAGES array must be populated with 100 random 
+*       values ranging between 0 and 49
+*   @param - None
+*   @return - Number of page faults (misses)
+*/
 int OPTIMAL(){
 
     vector<int> frames;
 
     int hit = 0;
-    for (int i = 0; i < REFERENCE_STRING_SIZE; i++) {
+    for (int i = 0; i < REFERENCE_STRING_SIZE; ++i) {
 
-        if (search(pages[i], frames)) {
+        if (search(PAGES[i], frames)) {
             hit++;
             continue;
         }
 
         if (frames.size() < NUMBER_OF_FRAMES)
-            frames.push_back(pages[i]);
-
+            frames.push_back(PAGES[i]);
         else {
-            int j = predict(pages, frames, i + 1);
-            frames[j] = pages[i];
+            frames[predict(i + 1, frames)] = PAGES[i];
         }
     }
     return REFERENCE_STRING_SIZE - hit;
 }
 
+/*
+*   Function: FIFO  
+*   ------------------------------------------------------
+*   Description: Calculates the number of page faults that 
+*       occur during the execution of the First In First 
+*       Out (FIFO) page replacement algorithm.
+*   Pre: PAGES array must be populated with 100 random 
+*       values ranging between 0 and 49
+*   @param - None
+*   @return - Number of page faults (misses)
+*/
 int FIFO()
 {
-
-    unordered_set<int> s;
-
+    unordered_set<int>current_pages;
     queue<int> indexes;
 
     int page_faults = 0;
-    for (int i = 0; i < REFERENCE_STRING_SIZE; i++)
+    for (int i = 0; i < REFERENCE_STRING_SIZE; ++i)
     {
-        if (s.size() < NUMBER_OF_FRAMES)
+        if (current_pages.size() < NUMBER_OF_FRAMES)
         {
-            if (s.find(pages[i])==s.end())
+            if (current_pages.find(PAGES[i]) == current_pages.end())
             {
-                s.insert(pages[i]);
+                current_pages.insert(PAGES[i]);
                 page_faults++;
-                indexes.push(pages[i]);
+                indexes.push(PAGES[i]);
             }
         }
-
         else
         {
-            if (s.find(pages[i]) == s.end())
+            if (current_pages.find(PAGES[i]) == current_pages.end())
             {
                 int val = indexes.front();
                 indexes.pop();
-                s.erase(val);
-                s.insert(pages[i]);
-                indexes.push(pages[i]);
+                current_pages.erase(val);
+                current_pages.insert(PAGES[i]);
+                indexes.push(PAGES[i]);
                 page_faults++;
             }
         }
     }
-
     return page_faults;
 }
 
@@ -182,8 +209,8 @@ int main(){
         cout<<"\nPage reference string:\n"<<endl;
 
         for(int j = 1; j <= REFERENCE_STRING_SIZE; ++j){
-            pages[j-1] = rand() % PAGE_RANGE;
-            cout<<pages[j-1]<<", ";
+            PAGES[j-1] = rand() % PAGE_RANGE;
+            cout<<PAGES[j-1]<<" ";
             if (j % 20 == 0) cout<<"\n";
         }
 
