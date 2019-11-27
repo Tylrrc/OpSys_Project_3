@@ -139,4 +139,6 @@ The following chart reflects the results of the aforementioned run:
 
 ![](https://github.com/Tylrrc/OpSys_Project_3/blob/master/FIFO%2C%20LRU%20and%20OPTIMAL.png)
 
+The y-axis reflects the number of faults whereas the x-axis pertains to the frame size.
+
 
