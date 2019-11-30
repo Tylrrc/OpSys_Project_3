@@ -10,7 +10,7 @@
 
 To compile the program, perform the following command:
 
-    g++ main.cpp
+     g++ -std=c++11 main.cpp
     
 To run the program, perform the following command:
 
